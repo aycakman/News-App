@@ -13,14 +13,26 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     private var newsListViewModel : NewsListViewModel!
     private let newsService = NewsService()
+    
+    let refreshControl = UIRefreshControl()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
     
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
+        tableView.addSubview(refreshControl)
+        
         getData()
         
+    }
+
+    @objc func refresh() {
+        self.tableView.reloadData()
+        self.refreshControl.endRefreshing()
     }
     
     func valueForAPIKey(named keyname:String) -> String {
@@ -31,10 +43,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func getData() {
-
-     
         let url = URL(string: valueForAPIKey(named: "API_KEY"))!
-        
         newsService.downloadNews(url: url) { news in
             if let news = news {
                 self.newsListViewModel = NewsListViewModel(articles: news.articles ?? [])
@@ -55,7 +64,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let articleViewModel = self.newsListViewModel.newsAtIndex(indexPath.row)
         
         cell.articleTitleLabel.text = articleViewModel.title
-        //cell.articleUrlLabel.text = articleViewModel.url
         return cell
     }
     
