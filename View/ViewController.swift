@@ -14,7 +14,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
     private var newsListViewModel : NewsListViewModel!
     private let newsService = NewsService()
-        
+    
+    var selectedRowIndex : Int?
     var filterNews : [Article]?
 
     let refreshControl = UIRefreshControl()
@@ -77,6 +78,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedRowIndex = indexPath.row
+        performSegue(withIdentifier: "toGoDetails", sender: nil)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == "toGoDetails",
+              let destinationVC = segue.destination as? DetailsViewController
+        else{
+            return
+        }
+        
+        if let selectedRowIndex = selectedRowIndex {
+            let articleViewModel = self.newsListViewModel.newsAtIndex(selectedRowIndex)
+            destinationVC.selectedTitle = articleViewModel.title
+            destinationVC.selectedUrl = articleViewModel.url
+            destinationVC.selectectAuthor = articleViewModel.author
+            destinationVC.selectedContent = articleViewModel.content
+            destinationVC.selectedDescription = articleViewModel.description
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filterNews?.count ?? 0
 
