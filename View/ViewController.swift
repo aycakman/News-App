@@ -7,13 +7,16 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
   
     @IBOutlet weak var tableView: UITableView!
-    
+    @IBOutlet weak var searchBar: UISearchBar!
+
     private var newsListViewModel : NewsListViewModel!
     private let newsService = NewsService()
-    
+        
+    var filterNews : [Article]?
+
     let refreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
@@ -22,17 +25,36 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.delegate = self
         tableView.dataSource = self
     
-        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
-        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
-        tableView.addSubview(refreshControl)
-        
+        searchBar.delegate = self
+
+        title = "NEWS"
+
+        pullToRefresh()
         getData()
         
     }
+    
+    func pullToRefresh() {
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
+        tableView.addSubview(refreshControl)
+    }
+
 
     @objc func refresh() {
         self.tableView.reloadData()
         self.refreshControl.endRefreshing()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if !searchText.isEmpty {
+           filterNews = newsListViewModel.articles.filter { article in
+               article.title?.localizedCaseInsensitiveContains(searchText) ?? false
+           }
+       } else {
+           filterNews = newsListViewModel.articles
+       }
+       tableView.reloadData()
     }
     
     func valueForAPIKey(named keyname:String) -> String {
@@ -47,6 +69,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         newsService.downloadNews(url: url) { news in
             if let news = news {
                 self.newsListViewModel = NewsListViewModel(articles: news.articles ?? [])
+                self.filterNews = self.newsListViewModel.articles
                 
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
@@ -55,7 +78,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.newsListViewModel == nil ? 0 : self.newsListViewModel.numberOfRowsInSection()
+        return filterNews?.count ?? 0
+
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -63,7 +87,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         let articleViewModel = self.newsListViewModel.newsAtIndex(indexPath.row)
         
-        cell.articleTitleLabel.text = articleViewModel.title
+        if let article = filterNews?[indexPath.row] {
+            cell.articleTitleLabel.text = article.title
+        }
         return cell
     }
     
