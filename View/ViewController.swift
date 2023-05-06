@@ -82,6 +82,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedRowIndex = indexPath.row
         performSegue(withIdentifier: "toGoDetails", sender: nil)
+        searchBar.text = ""
+        getData()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
