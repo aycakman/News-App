@@ -21,6 +21,17 @@ struct Article: Decodable {
     let urlToImage: String?
     let publishedAt: String?
     let content: String?
+    
+    init(title: String?, url: String?) {
+        self.title = title
+        self.url = url
+        self.author = nil
+        self.description = nil
+        self.source = nil
+        self.publishedAt = nil
+        self.urlToImage = nil
+        self.content = nil
+    }
 }
 
 // MARK: - Source

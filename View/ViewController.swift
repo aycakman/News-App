@@ -32,7 +32,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         pullToRefresh()
         getData()
-        
+    }
+    
+    
+    @IBAction func favoriteListButtonPressed(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "toPressFavoriteListButton", sender: nil)
     }
     
     func pullToRefresh() {
@@ -40,7 +44,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
         tableView.addSubview(refreshControl)
     }
-
 
     @objc func refresh() {
         self.tableView.reloadData()
@@ -111,11 +114,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! NewsTableViewCell
         
-        let articleViewModel = self.newsListViewModel.newsAtIndex(indexPath.row)
+        var content = cell.defaultContentConfiguration()
         
         if let article = filterNews?[indexPath.row] {
-            cell.articleTitleLabel.text = article.title
+            content.text = article.title
         }
+        
+        cell.contentConfiguration = content
+        
         return cell
     }
     
